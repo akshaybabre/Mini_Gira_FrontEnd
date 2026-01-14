@@ -3,8 +3,15 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Register from "./Pages/Authentication/Register";
 import Login from "./Pages/Authentication/Login";
-import Dashboard from "./Pages/Dashboard/Dashboard"
 import ProtectedRoute from "./Routes/ProtectedRoute"
+import DashboardLayout  from "./Components/dashboard/DashboardLayout";
+import DashboardHome  from "./Pages/Dashboard/DashboardHome";
+
+import Projects from "./Pages/Dashboard/Projects";
+import Teams from "./Pages/Dashboard/Teams";
+import Sprints from "./Pages/Dashboard/Sprints";
+import Tasks from "./Pages/Dashboard/Tasks";
+import Settings from "./Pages/Dashboard/Settings";
 
 function App() {
   return (
@@ -22,20 +29,27 @@ function App() {
       />
 
       <Routes>
-        {/* Default route */}
         <Route path="/" element={<Navigate to="/login" />} />
-
-        {/* Auth routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard"
+
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <DashboardLayout />
             </ProtectedRoute>
           }
-        />
-        {/* Fallback */}
+        >
+          <Route index element={<DashboardHome />} />
+
+          <Route path="projects" element={<Projects />} />
+          <Route path="teams" element={<Teams />} />
+          <Route path="sprints" element={<Sprints />} />
+          <Route path="tasks" element={<Tasks />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+        
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
 
