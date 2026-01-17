@@ -60,9 +60,9 @@ const Login = () => {
   useEffect(() => {
     if (isSuccess) {
       formik.resetForm();
-      toast.success("Login successful 🎉");
       dispatch(resetAuthState());
       navigate("/dashboard");
+      toast.success("Login successful 🎉");
     }
 
     if (isError) {

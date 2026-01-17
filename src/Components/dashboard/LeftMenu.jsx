@@ -1,10 +1,18 @@
-import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { navigation } from "./Navigation";
 import { X } from "lucide-react";
+import LogoutModal from "./LogoutModal";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { logoutUser, logoutUserThunk } from "../../Redux/Authentication/AuthSlice";
 
 const LeftMenu = ({ open, onClose }) => {
   const location = useLocation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [showLogout, setShowLogout] = useState(false);
+
 
   return (
     <>
@@ -33,7 +41,7 @@ const LeftMenu = ({ open, onClose }) => {
         {/* 🧊 Sidebar Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 h-15">
           <h1 className="text-lg font-semibold text-white tracking-wide">
-            ✨ Premium UI
+            ✨ Mini Gira
           </h1>
 
           {/* ❌ Close (Mobile) */}
@@ -55,9 +63,11 @@ const LeftMenu = ({ open, onClose }) => {
               <NavLink
                 key={item.name}
                 to={item.path}
-                onClick={() => {
-                  // 👇 MOBILE: click -> close sidebar
-                  if (window.innerWidth < 768) {
+                onClick={(e) => {
+                  if (item.name === "Logout") {
+                    e.preventDefault();
+                    setShowLogout(true);
+                  } else if (window.innerWidth < 768) {
                     onClose();
                   }
                 }}
@@ -111,6 +121,18 @@ const LeftMenu = ({ open, onClose }) => {
           })}
         </nav>
       </aside>
+      {showLogout && (
+        <LogoutModal
+          onCancel={() => setShowLogout(false)}
+          onConfirm={async () => {
+            await dispatch(logoutUserThunk());
+            dispatch(logoutUser());
+            navigate("/login");
+            toast.success("Logout successful 🎉");
+          }}
+
+        />
+      )}
     </>
   );
 };

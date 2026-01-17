@@ -13,7 +13,7 @@ const DashboardLayout = () => {
       <div className="flex-1 flex flex-col">
         <Header toggle={() => setOpen(true)} />
 
-        <main className="p-6 md:p-8 lg:p-10">
+        <main className="p-1 md:p-1 lg:p-1">
           <Outlet />
         </main>
       </div>

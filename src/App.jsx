@@ -5,14 +5,17 @@ import "react-toastify/dist/ReactToastify.css";
 import Register from "./Pages/Authentication/Register";
 import Login from "./Pages/Authentication/Login";
 import ProtectedRoute from "./Routes/ProtectedRoute"
-import DashboardLayout  from "./Components/dashboard/DashboardLayout";
-import DashboardHome  from "./Pages/Dashboard/DashboardHome";
-
-import Projects from "./Pages/Dashboard/Projects";
-import Teams from "./Pages/Dashboard/Teams";
-import Sprints from "./Pages/Dashboard/Sprints";
-import Tasks from "./Pages/Dashboard/Tasks";
-import Settings from "./Pages/Dashboard/Settings";
+import DashboardLayout from "./Components/dashboard/DashboardLayout";
+import GiraAnalyticsDashboard from "./Pages/Dashboard/GiraAnalyticsDashboard";
+import ProjectsList from "./Pages/Projects/ProjectsList";
+import ProjectDetails from "./Pages/Projects/ProjectDetails";
+import TasksList from "./Pages/Tasks/TasksList";
+import TaskDetails from "./Pages/Tasks/TaskDetails";
+import TeamsList from "./Pages/Teams/TeamsList";
+import TeamDetails from "./Pages/Teams/TeamDetails";
+import SprintsList from "./Pages/Sprints/SprintsList"
+import SprintDetails from "./Pages/Sprints/SprintDetails"
+import SettingsHome from "./Pages/Settings/SettingsHome"
 
 function App() {
   return (
@@ -42,15 +45,26 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardHome />} />
+          <Route index element={<GiraAnalyticsDashboard />} />
 
-          <Route path="projects" element={<Projects />} />
-          <Route path="teams" element={<Teams />} />
-          <Route path="sprints" element={<Sprints />} />
-          <Route path="tasks" element={<Tasks />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="projects" element={<ProjectsList />} />
+          <Route path="projects/:id" element={<ProjectDetails />} />
+
+          <Route path="tasks" element={<TasksList />} />
+          <Route path="tasks/:id" element={<TaskDetails />} />
+
+          <Route path="teams" element={<TeamsList />} />
+          <Route path="teams/:id" element={<TeamDetails />} />
+
+          <Route path="sprints" element={<SprintsList />} />
+          <Route path="sprints/:id" element={<SprintDetails />} />
+
+          <Route path="settings" element={<SettingsHome />} />
+
         </Route>
-        
+
+
+
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
 
