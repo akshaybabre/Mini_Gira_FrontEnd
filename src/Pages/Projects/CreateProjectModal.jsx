@@ -3,31 +3,35 @@ import GlassContainer from "../../Components/Projects/GlassContainer";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import gsap from "gsap";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { createProject, updateProject } from "../../Redux/Projects/ProjectSlice";
+import { toast } from "react-toastify";
 
 
 
-const CreateProjectModal = ({ onClose, onCreate, currentUser }) => {
+const CreateProjectModal = ({ onClose, currentUser, editProject }) => {
+  const dispatch = useDispatch();
   const modalRef = useRef(null);
   const { user } = useSelector((state) => state.authentication);
 
   const toTitleCase = (value) =>
-  value
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    value
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
 
 
   const [form, setForm] = useState({
-    name: "",
-    description: "",
-    key: "",
-    visibility: "Public",
-    status: "Active",
-    startDate: null,
-    endDate: null,
-    createdBy: currentUser || user?.name,
-    members: [],
+    name: editProject?.name || "",
+    description: editProject?.description || "",
+    key: editProject?.key || "",
+    visibility: editProject?.visibility || "Public",
+    status: editProject?.status || "Active",
+    startDate: editProject?.startDate ? new Date(editProject.startDate) : null,
+    endDate: editProject?.endDate ? new Date(editProject.endDate) : null,
+    createdByName: editProject?.createdByName || user?.name,
+    members: editProject?.members || [],
   });
+
 
   const [errors, setErrors] = useState({});
 
@@ -71,14 +75,14 @@ const CreateProjectModal = ({ onClose, onCreate, currentUser }) => {
   const handleSubmit = () => {
     const e = validate();
     if (Object.keys(e).length) return setErrors(e);
+    if (editProject) {
+      dispatch(updateProject({ id: editProject._id, data: form }));
+      toast.success("Project updated successfully ✏️");
+    } else {
+      dispatch(createProject(form));
+      toast.success("Project created successfully 🚀");
 
-    const newProject = {
-      id: Date.now(),
-      ...form,
-    };
-
-    console.log("Created Project:", newProject);
-    onCreate(newProject);
+    }
     handleClose();
   };
 
@@ -155,9 +159,9 @@ const CreateProjectModal = ({ onClose, onCreate, currentUser }) => {
             {/* Owner */}
             <input
               type="text"
-              value={form.createdBy}
+              value={form.createdByName}
               onChange={(e) =>
-                setForm({ ...form, createdBy: toTitleCase(e.target.value) })
+                setForm({ ...form, createdByName: toTitleCase(e.target.value) })
               }
               className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
               placeholder="Owner"
@@ -199,7 +203,7 @@ const CreateProjectModal = ({ onClose, onCreate, currentUser }) => {
                 onClick={handleSubmit}
                 className="text-xs px-3 py-1 bg-[#00D1FF]/20 text-[#00D1FF] rounded-lg"
               >
-                Create
+                {editProject ? "Update" : "Create"}
               </button>
             </div>
 

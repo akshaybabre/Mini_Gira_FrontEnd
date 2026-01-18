@@ -7,7 +7,7 @@ const statusColor = {
   Archived: "bg-gray-500/20 text-gray-300",
 };
 
-const ProjectCard = ({ project, onView, onDelete }) => {
+const ProjectCard = ({ project, onView, onEdit , onDelete }) => {
   return (
     <GlassContainer>
       <div className="flex flex-col gap-2">
@@ -20,9 +20,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
           </span>
 
           <span
-            className={`px-2 py-1 text-xs rounded-full ${
-              statusColor[project.status]
-            }`}
+            className={`px-2 py-1 text-xs rounded-full ${statusColor[project.status]
+              }`}
           >
             {project.status}
           </span>
@@ -34,6 +33,12 @@ const ProjectCard = ({ project, onView, onDelete }) => {
             className="text-xs px-3 py-1 bg-[#00D1FF]/10 text-[#00D1FF] rounded-lg hover:bg-[#00D1FF]/20"
           >
             View
+          </button>
+          <button
+            onClick={() => onEdit(project)}   // 👈 new
+            className="text-xs px-3 py-1 bg-yellow-500/10 text-yellow-400 rounded-lg hover:bg-yellow-500/20"
+          >
+            Edit
           </button>
           <button
             onClick={() => onDelete(project)}
