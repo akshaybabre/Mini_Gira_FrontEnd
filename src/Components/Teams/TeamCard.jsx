@@ -1,7 +1,7 @@
 import React from "react";
 import GlassContainer from "./GlassContainer";
 
-const TeamCard = ({ team, onView, onDelete }) => {
+const TeamCard = ({ team, onView, onEdit, onDelete }) => {
   return (
     <GlassContainer>
       <div className="flex flex-col gap-2 text-white">
@@ -24,7 +24,12 @@ const TeamCard = ({ team, onView, onDelete }) => {
           >
             View
           </button>
-
+          <button
+            onClick={() => onEdit(team)}
+            className="px-3 py-1 text-xs bg-yellow-500/10 text-yellow-400 rounded-lg hover:bg-yellow-500/20"
+          >
+            Edit
+          </button>
           <button
             onClick={() => onDelete(team)}
             className="px-3 py-1 text-xs bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20"

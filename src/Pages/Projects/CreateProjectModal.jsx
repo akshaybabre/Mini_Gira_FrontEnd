@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 
 
 
-const CreateProjectModal = ({ onClose, currentUser, editProject }) => {
+const CreateProjectModal = ({ onClose, editProject }) => {
   const dispatch = useDispatch();
   const modalRef = useRef(null);
   const { user } = useSelector((state) => state.authentication);
