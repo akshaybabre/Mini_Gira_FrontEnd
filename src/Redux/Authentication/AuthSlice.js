@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+
 const Baseurl = import.meta.env.VITE_REACT_APP_API_URL;
 
 const initialState = {
@@ -8,6 +9,7 @@ const initialState = {
   isError: false,
   isSuccess: false,
   message: "",
+  companySuggestions: [],
 };
 
 /* =======================
@@ -17,8 +19,11 @@ export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (formData, thunkAPI) => {
     try {
-      const url = `${Baseurl}/api/auth/register`;
-      const resp = await axios.post(url, formData);
+      const resp = await axios.post(
+        `${Baseurl}/api/auth/register`,
+        formData,
+        { withCredentials: true }
+      );
       return resp.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -35,8 +40,11 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (formData, thunkAPI) => {
     try {
-      const url = `${Baseurl}/api/auth/login`;
-      const resp = await axios.post(url, formData);
+      const resp = await axios.post(
+        `${Baseurl}/api/auth/login`,
+        formData,
+        { withCredentials: true }   // 🔥 VERY IMPORTANT
+      );
 
       return resp.data;
     } catch (error) {
@@ -47,6 +55,9 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+/* =======================
+   LOGOUT
+======================= */
 export const logoutUserThunk = createAsyncThunk(
   "auth/logoutUser",
   async (_, thunkAPI) => {
@@ -63,6 +74,22 @@ export const logoutUserThunk = createAsyncThunk(
   }
 );
 
+/* =======================
+   COMPANY SUGGESTION
+======================= */
+export const fetchCompanySuggestions = createAsyncThunk(
+  "auth/fetchCompanySuggestions",
+  async (query, thunkAPI) => {
+    try {
+      const resp = await axios.get(
+        `${Baseurl}/api/company/suggest?query=${query}`
+      );
+      return resp.data.companies;
+    } catch (error) {
+      return thunkAPI.rejectWithValue("Failed to fetch suggestions");
+    }
+  }
+);
 
 const AuthSlice = createSlice({
   name: "authentication",
@@ -71,6 +98,9 @@ const AuthSlice = createSlice({
     logoutUser(state) {
       state.user = null;
       localStorage.removeItem("user");
+      state.isSuccess = false;
+      state.isError = false;
+      state.message = "";
     },
     resetAuthState(state) {
       state.isLoading = false;
@@ -81,9 +111,11 @@ const AuthSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+
       /* ===== REGISTER ===== */
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
+        state.isError = false;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -99,21 +131,34 @@ const AuthSlice = createSlice({
       /* ===== LOGIN ===== */
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
+        state.isError = false;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
         state.user = action.payload.user;
         state.message = action.payload.message;
-        localStorage.setItem("user", JSON.stringify(action.payload.user));
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify(action.payload.user)
+        );
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
       })
+
+      /* ===== LOGOUT ===== */
       .addCase(logoutUserThunk.fulfilled, (state) => {
         state.user = null;
+        localStorage.removeItem("user");
+      })
+
+      /* ===== COMPANY SUGGEST ===== */
+      .addCase(fetchCompanySuggestions.fulfilled, (state, action) => {
+        state.companySuggestions = action.payload;
       });
   },
 });
