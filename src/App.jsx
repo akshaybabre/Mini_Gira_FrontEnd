@@ -5,7 +5,6 @@ import "react-toastify/dist/ReactToastify.css";
 import Register from "./Pages/Authentication/Register";
 import Login from "./Pages/Authentication/Login";
 import ProtectedRoute from "./Routes/ProtectedRoute"
-import DashboardLayout from "./Components/dashboard/DashboardLayout";
 import GiraAnalyticsDashboard from "./Pages/Dashboard/GiraAnalyticsDashboard";
 import ProjectsList from "./Pages/Projects/ProjectsList";
 import ProjectDetails from "./Pages/Projects/ProjectDetails";
@@ -16,6 +15,8 @@ import TeamDetails from "./Pages/Teams/TeamDetails";
 import SprintsList from "./Pages/Sprints/SprintsList"
 import SprintDetails from "./Pages/Sprints/SprintDetails"
 import SettingsHome from "./Pages/Settings/SettingsHome"
+import RoleBasedLayout from "./Components/dashboard/RoleBasedLayout";
+
 
 function App() {
   return (
@@ -41,11 +42,11 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardLayout />
+              <RoleBasedLayout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<GiraAnalyticsDashboard />} />
+          <Route index element={<GiraAnalyticsDashboard  />} />
 
           <Route path="projects" element={<ProjectsList />} />
           <Route path="projects/:id" element={<ProjectDetails />} />

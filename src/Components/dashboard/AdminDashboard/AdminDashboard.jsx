@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 import LeftMenu from "./LeftMenu";
 import Header from "./Header";
 
-const DashboardLayout = () => {
+const AdminDashboard = () => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -21,4 +21,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout;
+export default AdminDashboard;

@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import LogoutModal from "./LogoutModal";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { logoutUser, logoutUserThunk } from "../../Redux/Authentication/AuthSlice";
+import { logoutUser, logoutUserThunk } from "../../../Redux/Authentication/AuthSlice";
 
 const LeftMenu = ({ open, onClose }) => {
   const location = useLocation();

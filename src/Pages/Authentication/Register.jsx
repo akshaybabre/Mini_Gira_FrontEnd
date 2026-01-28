@@ -285,10 +285,10 @@ const Register = () => {
         ))}
       </div>
 
-      <div className="relative z-10 w-full max-w-2xl">
+      <div className="relative z-10 w-full max-w-2xl mt-8 mb-10">
         {/* Progress Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
             <div className={`flex items-center ${step >= 1 ? 'text-blue-400' : 'text-gray-500'}`}>
               <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${step >= 1 ? 'border-blue-400 bg-blue-400/10' : 'border-gray-600'}`}>
                 {step >= 1 ? <Check size={20} /> : <User size={20} />}
@@ -324,7 +324,7 @@ const Register = () => {
         {/* Main Card */}
         <div
           ref={cardRef}
-          className="rounded-3xl bg-gradient-to-br from-gray-900/90 to-gray-900/50 backdrop-blur-2xl shadow-2xl border border-white/10 p-8 text-white relative overflow-hidden"
+          className="rounded-3xl bg-gradient-to-br from-gray-900/90 to-gray-900/50 backdrop-blur-2xl shadow-2xl border border-white/10 p-6 text-white relative overflow-hidden"
         >
           {/* Glow Effects */}
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl" />
@@ -332,7 +332,7 @@ const Register = () => {
           
           <div className="relative z-10">
             {/* Header */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center p-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl mb-4">
                 <Rocket size={32} className="text-blue-400" />
               </div>
@@ -588,7 +588,7 @@ const InputField = ({ icon, placeholder, name, formik, type = "text" }) => (
         placeholder={placeholder}
         className="w-full pl-12 pr-4 py-4 rounded-xl bg-gray-900/50 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all group-hover:border-gray-600"
       />
-      {formik.touched[name] && !formik.errors[name] && formik.values[name] && (
+      {!formik.errors[name] && formik.values[name] && (
         <Check className="absolute right-4 top-4 text-green-400" size={18} />
       )}
     </div>
