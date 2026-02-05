@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ProjectCard from "../../Components/Projects/ProjectCard";
-import CreateProjectModal from "../../Pages/Projects/CreateProjectModal";
+import CreateProjectModal from "./CreateProjectModal";
 import { useDispatch, useSelector } from "react-redux";
 import { getMyProjects , deleteProject } from "../../Redux/Projects/ProjectSlice";
 import { useNavigate } from "react-router-dom";

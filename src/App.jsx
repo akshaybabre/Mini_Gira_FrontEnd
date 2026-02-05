@@ -16,6 +16,11 @@ import SprintsList from "./Pages/Sprints/SprintsList"
 import SprintDetails from "./Pages/Sprints/SprintDetails"
 import SettingsHome from "./Pages/Settings/SettingsHome"
 import RoleBasedLayout from "./Components/dashboard/RoleBasedLayout";
+import MemberDashboard from "./Components/dashboard/MemberDashboard/MemberDashboard";
+import MemberProjects from "./Pages/MemberProjects/MemberProjects"
+import MemberSprints from "./Pages/MemberProjects/MemberSprints"
+import MemberTasks from "./Pages/MemberProjects/MemberTasks"
+
 
 
 function App() {
@@ -46,7 +51,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<GiraAnalyticsDashboard  />} />
+          <Route index element={<GiraAnalyticsDashboard />} />
 
           <Route path="projects" element={<ProjectsList />} />
           <Route path="projects/:id" element={<ProjectDetails />} />
@@ -63,6 +68,23 @@ function App() {
           <Route path="settings" element={<SettingsHome />} />
 
         </Route>
+        <Route
+          path="/member"
+          element={
+            <ProtectedRoute>
+              <MemberDashboard />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<GiraAnalyticsDashboard />} />
+
+          <Route path="memberprojects" element={<MemberProjects />} />
+
+          <Route path="membersprints" element={<MemberSprints />} />
+
+          <Route path="membertasks" element={<MemberTasks />} />
+        </Route>
+
 
 
 
