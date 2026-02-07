@@ -1,40 +1,41 @@
 import React, { useEffect, useRef, useState } from "react";
 import GlassContainer from "../../Components/Projects/GlassContainer";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import gsap from "gsap";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createProject, updateProject } from "../../Redux/Projects/ProjectSlice";
 import { toast } from "react-toastify";
-
-
+import { getCompanyMembers } from "../../Redux/Tasks/TasksSlice";
 
 const CreateProjectModal = ({ onClose, editProject }) => {
   const dispatch = useDispatch();
   const modalRef = useRef(null);
-  const { user } = useSelector((state) => state.authentication);
+  const { members, isLoading } = useSelector((state) => state.tasks);
+
+  useEffect(() => {
+    dispatch(getCompanyMembers());
+  }, [dispatch]);
 
   const toTitleCase = (value) =>
     value
       .toLowerCase()
       .replace(/\b\w/g, (char) => char.toUpperCase());
 
-
+  /* =======================
+     FORM STATE (BACKEND ALIGNED)
+  ======================= */
   const [form, setForm] = useState({
     name: editProject?.name || "",
     description: editProject?.description || "",
     key: editProject?.key || "",
-    visibility: editProject?.visibility || "Public",
     status: editProject?.status || "Active",
-    startDate: editProject?.startDate ? new Date(editProject.startDate) : null,
-    endDate: editProject?.endDate ? new Date(editProject.endDate) : null,
-    createdByName: editProject?.createdByName || user?.name,
     members: editProject?.members || [],
   });
 
-
   const [errors, setErrors] = useState({});
 
+  /* =======================
+     GSAP ANIMATION
+  ======================= */
   useEffect(() => {
     gsap.fromTo(
       modalRef.current,
@@ -54,36 +55,58 @@ const CreateProjectModal = ({ onClose, editProject }) => {
     });
   };
 
+  /* =======================
+     VALIDATION (MODEL BASED)
+  ======================= */
   const validate = () => {
     const e = {};
+
     if (!form.name.trim() || form.name.length < 3)
       e.name = "Project name must be at least 3 characters";
 
-    if (!form.description.trim() || form.description.length < 10)
-      e.description = "Description must be at least 10 characters";
+    if (form.description && form.description.length > 2000)
+      e.description = "Description too long";
 
     if (!form.key.trim())
       e.key = "Project key is required";
 
-
-    if (form.endDate && form.startDate && form.endDate < form.startDate)
-      e.endDate = "End date must be after start date";
-
     return e;
   };
 
-  const handleSubmit = () => {
+  /* =======================
+     PAYLOAD SANITIZER
+  ======================= */
+  const buildPayload = () => ({
+    name: form.name.trim(),
+    description: form.description.trim(),
+    key: form.key.trim().toUpperCase(),
+    status: form.status,
+    members: form.members,
+  });
+
+  /* =======================
+     SUBMIT HANDLER
+  ======================= */
+  const handleSubmit = async () => {
     const e = validate();
     if (Object.keys(e).length) return setErrors(e);
-    if (editProject) {
-      dispatch(updateProject({ id: editProject._id, data: form }));
-      toast.success("Project updated successfully ✏️");
-    } else {
-      dispatch(createProject(form));
-      toast.success("Project created successfully 🚀");
 
+    const payload = buildPayload();
+
+    try {
+      if (editProject) {
+        await dispatch(
+          updateProject({ id: editProject._id, data: payload })
+        ).unwrap();
+        toast.success("Project updated successfully ✏️");
+      } else {
+        await dispatch(createProject(payload)).unwrap();
+        toast.success("Project created successfully 🚀");
+      }
+      handleClose();
+    } catch (err) {
+      toast.error(err || "Something went wrong");
     }
-    handleClose();
   };
 
   return (
@@ -94,18 +117,22 @@ const CreateProjectModal = ({ onClose, editProject }) => {
       >
         <GlassContainer>
           <div className="flex flex-col gap-4">
-
             <h2 className="text-xl font-semibold text-white">
-              Create New Project
+              {editProject ? "Update Project" : "Create New Project"}
             </h2>
 
-            {/* Name */}
+            {/* Project Name */}
             <div>
               <input
                 type="text"
                 placeholder="Project Name"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: toTitleCase(e.target.value) })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    name: toTitleCase(e.target.value),
+                  })
+                }
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
               />
               {errors.name && (
@@ -119,7 +146,10 @@ const CreateProjectModal = ({ onClose, editProject }) => {
                 placeholder="Description"
                 value={form.description}
                 onChange={(e) =>
-                  setForm({ ...form, description: toTitleCase(e.target.value) })
+                  setForm({
+                    ...form,
+                    description: toTitleCase(e.target.value),
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
               />
@@ -130,13 +160,15 @@ const CreateProjectModal = ({ onClose, editProject }) => {
               )}
             </div>
 
-            {/* Key */}
+            {/* Project Key */}
             <div>
               <input
                 type="text"
                 placeholder="Project Key (EAP)"
                 value={form.key}
-                onChange={(e) => setForm({ ...form, key: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, key: e.target.value })
+                }
                 className="w-full uppercase bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
               />
               {errors.key && (
@@ -144,52 +176,88 @@ const CreateProjectModal = ({ onClose, editProject }) => {
               )}
             </div>
 
-            {/* Visibility */}
+            {/* Status */}
             <select
-              value={form.visibility}
+              value={form.status}
               onChange={(e) =>
-                setForm({ ...form, visibility: e.target.value })
+                setForm({ ...form, status: e.target.value })
               }
               className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
             >
-              <option className="bg-[#0B1220]">Public</option>
-              <option className="bg-[#0B1220]">Private</option>
+              <option className="bg-[#0B1220]">Active</option>
+              <option className="bg-[#0B1220]">Completed</option>
+              <option className="bg-[#0B1220]">Archived</option>
             </select>
 
-            {/* Owner */}
-            <input
-              type="text"
-              value={form.createdByName}
-              onChange={(e) =>
-                setForm({ ...form, createdByName: toTitleCase(e.target.value) })
-              }
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
-              placeholder="Owner"
-            />
+            {/* PROJECT MEMBERS */}
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">
+                Project Members
+              </label>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Start Date */}
-              <DatePicker
-                selected={form.startDate}
-                onChange={(date) => setForm({ ...form, startDate: date })}
-                placeholderText="Start Date"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
-              />
+              {/* Dropdown (task / team style) */}
+              <select
+                value=""
+                onChange={(e) => {
+                  const userId = e.target.value;
+                  if (!userId) return;
 
-              {/* End Date */}
-              <DatePicker
-                selected={form.endDate}
-                onChange={(date) => setForm({ ...form, endDate: date })}
-                placeholderText="End Date"
+                  if (!form.members.includes(userId)) {
+                    setForm((prev) => ({
+                      ...prev,
+                      members: [...prev.members, userId],
+                    }));
+                  }
+                }}
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
-              />
-              {errors.endDate && (
-                <p className="text-red-400 text-xs mt-1">{errors.endDate}</p>
+              >
+                <option value="">Add Member</option>
+                {isLoading ? (
+                  <option>Loading members...</option>
+                ) : (
+                  members.map((user) => (
+                    <option
+                      key={user._id}
+                      value={user._id}
+                      disabled={form.members.includes(user._id)}
+                      className="bg-[#0B1220]"
+                    >
+                      {user.name}
+                    </option>
+                  ))
+                )}
+              </select>
+
+              {/* Selected members chips */}
+              {form.members.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {members
+                    .filter((u) => form.members.includes(u._id))
+                    .map((u) => (
+                      <span
+                        key={u._id}
+                        className="flex items-center gap-1 text-xs bg-[#00D1FF]/20 text-[#00D1FF] px-2 py-1 rounded"
+                      >
+                        {u.name}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((prev) => ({
+                              ...prev,
+                              members: prev.members.filter(
+                                (id) => id !== u._id
+                              ),
+                            }))
+                          }
+                          className="hover:text-red-400"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                </div>
               )}
             </div>
-
-
-
 
             {/* Buttons */}
             <div className="flex justify-end gap-2 mt-3">
@@ -206,7 +274,6 @@ const CreateProjectModal = ({ onClose, editProject }) => {
                 {editProject ? "Update" : "Create"}
               </button>
             </div>
-
           </div>
         </GlassContainer>
       </div>

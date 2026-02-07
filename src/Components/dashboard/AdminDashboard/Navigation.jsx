@@ -25,14 +25,14 @@ export const navigation = [
     icon: Users,
   },
   {
-    name: "Sprints",
-    path: "/dashboard/sprints",
-    icon: CalendarCheck,
-  },
-  {
     name: "Tasks",
     path: "/dashboard/tasks",
     icon: CheckSquare,
+  },
+  {
+    name: "Sprints",
+    path: "/dashboard/sprints",
+    icon: CalendarCheck,
   },
   {
     name: "Settings",

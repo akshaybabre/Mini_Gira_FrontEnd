@@ -12,6 +12,11 @@ const TeamDetails = () => {
   const { id } = useParams();
   const { teams } = useSelector((state) => state.teams);
   const team = teams.find((t) => t._id === id);
+  const { members: allMembers } = useSelector((state) => state.tasks);
+
+  const memberMap = Object.fromEntries(
+    allMembers.map((u) => [u._id, u.name])
+  );
 
   const [active, setActive] = useState("Overview");
 
@@ -21,34 +26,45 @@ const TeamDetails = () => {
   return (
     <div className="p-6 text-white space-y-6">
 
-      {/* ===== TITLE SECTION ===== */}
+      {/* ===== TITLE ===== */}
       <div>
         <h1 className="text-2xl font-bold">{team.name}</h1>
-        <p className="text-gray-400 text-sm mt-1">{team.description}</p>
+        <p className="text-gray-400 text-sm mt-1">
+          {team.description || "No description provided"}
+        </p>
       </div>
 
-      {/* ===== META INFO (Grid like Project) ===== */}
+      {/* ===== META GRID ===== */}
       <div className="grid md:grid-cols-2 gap-4 text-sm">
 
         <div className="bg-white/5 border border-white/10 rounded-lg p-3">
           <p className="text-gray-500">Team Key</p>
-          <p className="font-medium">{team.teamKey}</p>
+          <p className="font-medium">{team.key}</p>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-lg p-3">
           <p className="text-gray-500">Status</p>
           <span
-            className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs ${
-              badgeColor[team.status]
-            }`}
+            className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs ${badgeColor[team.status]
+              }`}
           >
             {team.status}
           </span>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+          <p className="text-gray-500">Company</p>
+          <p className="font-medium">{team.company?.name}</p>
+        </div>
+
+        <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+          <p className="text-gray-500">Project</p>
+          <p className="font-medium">{team.project?.name}</p>
+        </div>
+
+        <div className="bg-white/5 border border-white/10 rounded-lg p-3">
           <p className="text-gray-500">Owner</p>
-          <p className="font-medium">{team.createdByName}</p>
+          <p className="font-medium">{team.createdBy?.name}</p>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-lg p-3">
@@ -58,47 +74,28 @@ const TeamDetails = () => {
 
       </div>
 
-      {/* ===== MEMBERS SECTION ===== */}
+      {/* ===== MEMBERS ===== */}
       <div className="bg-white/5 border border-white/10 rounded-lg p-4">
         <h2 className="font-semibold mb-2">Members</h2>
 
-        {team.members.length === 0 ? (
-          <p className="text-gray-500 text-sm">No members added</p>
-        ) : (
-          <ul className="flex flex-wrap gap-2">
-            {team.members.map((m, idx) => (
-              <li
-                key={idx}
-                className="px-2 py-1 bg-white/10 text-xs rounded-lg"
-              >
-                {m.name || m}
-              </li>
-            ))}
-          </ul>
-        )}
+        <ul className="flex flex-wrap gap-2">
+          {team.members.map((id) => (
+            <li
+              key={id}
+              className="px-2 py-1 bg-white/10 text-xs rounded-lg"
+            >
+              {memberMap[id] || "Unknown"}
+            </li>
+          ))}
+        </ul>
       </div>
 
-      {/* ===== TABS (same vibe as Project) ===== */}
+      {/* ===== TABS ===== */}
       <TeamTabs active={active} setActive={setActive} />
 
-      {/* ===== TAB CONTENT ===== */}
       {active === "Overview" && (
         <div className="text-sm text-gray-300">
-          This team is responsible for managing assigned projects and members.
-        </div>
-      )}
-
-      {active === "Assigned Tasks" && (
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-          {team.projects.length === 0 ? (
-            <p className="text-gray-500 text-sm">No projects assigned</p>
-          ) : (
-            <ul className="list-disc pl-5 text-sm">
-              {team.projects.map((p, idx) => (
-                <li key={idx}>{p.name || p}</li>
-              ))}
-            </ul>
-          )}
+          This team is working under <b>{team.project?.name}</b> project.
         </div>
       )}
 

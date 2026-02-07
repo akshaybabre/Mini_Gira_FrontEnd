@@ -19,7 +19,7 @@ export const createTeam = createAsyncThunk(
   async (formData, thunkAPI) => {
     try {
       const resp = await axios.post(
-        `${Baseurl}/api/teams/create`,
+        `${Baseurl}/api/teams/createteam`,
         formData,
         { withCredentials: true }
       );
@@ -40,13 +40,33 @@ export const getMyTeams = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const resp = await axios.get(
-        `${Baseurl}/api/teams/myteams`,
+        `${Baseurl}/api/teams/getteams`,
         { withCredentials: true }
       );
       return resp.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Fetch teams failed"
+      );
+    }
+  }
+);
+
+/* =======================
+   GET TEAM BY ID
+======================= */
+export const getTeamById = createAsyncThunk(
+  "teams/getTeamById",
+  async (id, thunkAPI) => {
+    try {
+      const resp = await axios.get(
+        `${Baseurl}/api/teams/getteamsbyid/${id}`,
+        { withCredentials: true }
+      );
+      return resp.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Fetch team failed"
       );
     }
   }
@@ -60,7 +80,7 @@ export const updateTeam = createAsyncThunk(
   async ({ id, data }, thunkAPI) => {
     try {
       const resp = await axios.put(
-        `${Baseurl}/api/teams/update/${id}`,
+        `${Baseurl}/api/teams/updateteam/${id}`,
         data,
         { withCredentials: true }
       );
@@ -81,7 +101,7 @@ export const deleteTeam = createAsyncThunk(
   async (id, thunkAPI) => {
     try {
       await axios.delete(
-        `${Baseurl}/api/teams/delete/${id}`,
+        `${Baseurl}/api/teams/deleteteam/${id}`,
         { withCredentials: true }
       );
       return id;
@@ -114,7 +134,7 @@ const TeamsSlice = createSlice({
       .addCase(createTeam.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.teams.push(action.payload.team);
+        state.teams.unshift(action.payload.team);
         state.message = action.payload.message;
       })
       .addCase(createTeam.rejected, (state, action) => {
@@ -132,6 +152,7 @@ const TeamsSlice = createSlice({
         state.teams = action.payload.teams;
       })
       .addCase(getMyTeams.rejected, (state, action) => {
+        state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
       })

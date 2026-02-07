@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import GlassContainer from "../../Components/Teams/GlassContainer";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createTeam, updateTeam } from "../../Redux/Teams/TeamsSlice";
+import { getCompanyMembers } from "../../Redux/Tasks/TasksSlice";
 import { toast } from "react-toastify";
 import gsap from "gsap";
 
@@ -9,22 +10,36 @@ const CreateTeamModal = ({ onClose, editTeam }) => {
   const dispatch = useDispatch();
   const modalRef = useRef(null);
 
+  // 🔥 PROJECTS FROM REDUX
+  const { projects } = useSelector((state) => state.projects);
+  const { members, isLoading } = useSelector((state) => state.tasks);
+
+  useEffect(() => {
+    dispatch(getCompanyMembers());
+  }, [dispatch]);
+
   const toTitleCase = (value) =>
     value
       .toLowerCase()
       .replace(/\b\w/g, (char) => char.toUpperCase());
 
-
+  /* =======================
+     FORM STATE
+  ======================= */
   const [form, setForm] = useState({
+    projectId: editTeam?.project?.id || "",
     name: editTeam?.name || "",
     description: editTeam?.description || "",
-    teamKey: editTeam?.teamKey || "",
-    members: editTeam?.members?.join(", ") || "",
+    key: editTeam?.key || "",
+    members: editTeam?.members || [],
+    status: editTeam?.status || "Active",
   });
-
 
   const [errors, setErrors] = useState({});
 
+  /* =======================
+     GSAP
+  ======================= */
   useEffect(() => {
     gsap.fromTo(
       modalRef.current,
@@ -44,44 +59,62 @@ const CreateTeamModal = ({ onClose, editTeam }) => {
     });
   };
 
-  /* ===== VALIDATION (backend aligned) ===== */
+  /* =======================
+     VALIDATION
+  ======================= */
   const validate = () => {
     const e = {};
 
-    if (!form.name.trim() || form.name.length < 3)
-      e.name = "Team name must be at least 3 characters";
+    if (!form.projectId)
+      e.projectId = "Project is required";
 
-    if (!form.description.trim() || form.description.length < 10)
-      e.description = "Description must be at least 10 characters";
+    if (!form.name.trim() || form.name.length < 2)
+      e.name = "Team name must be at least 2 characters";
 
-    if (!form.teamKey.trim())
-      e.teamKey = "Team key is required";
+    if (form.description && form.description.length > 500)
+      e.description = "Description too long";
+
+    if (!form.key.trim())
+      e.key = "Team key is required";
 
     return e;
   };
 
-  /* ===== SUBMIT ===== */
-  const handleSubmit = () => {
+  /* =======================
+     PAYLOAD
+  ======================= */
+  const buildPayload = () => ({
+    projectId: form.projectId,
+    name: form.name.trim(),
+    description: form.description.trim(),
+    key: form.key.trim().toUpperCase(),
+    status: form.status,
+    members: form.members,
+  });
+
+  /* =======================
+     SUBMIT
+  ======================= */
+  const handleSubmit = async () => {
     const e = validate();
     if (Object.keys(e).length) return setErrors(e);
 
-    const payload = {
-      name: form.name,
-      description: form.description,
-      teamKey: form.teamKey.toUpperCase(),
-      members: form.members
-        ? form.members.split(",").map((m) => m.trim())
-        : [],
-    };
+    const payload = buildPayload();
 
-    if (editTeam) {
-      dispatch(updateTeam({ id: editTeam._id, data: payload }));
-      toast.success("Team updated successfully ✏️");
-    } else {
-      dispatch(createTeam(payload));
-      toast.success("Team created successfully 🚀");
+    try {
+      if (editTeam) {
+        await dispatch(
+          updateTeam({ id: editTeam._id, data: payload })
+        ).unwrap();
+        toast.success("Team updated successfully ✏️");
+      } else {
+        await dispatch(createTeam(payload)).unwrap();
+        toast.success("Team created successfully 🚀");
+      }
+      handleClose();
+    } catch (err) {
+      toast.error(err || "Something went wrong");
     }
-    handleClose();
   };
 
   return (
@@ -92,69 +125,154 @@ const CreateTeamModal = ({ onClose, editTeam }) => {
       >
         <GlassContainer>
           <div className="flex flex-col gap-4 text-white">
+            <h2 className="text-xl font-semibold">
+              {editTeam ? "Update Team" : "Create New Team"}
+            </h2>
 
-            <h2 className="text-xl font-semibold">Create New Team</h2>
+            {/* PROJECT DROPDOWN */}
+            <div>
+              <select
+                value={form.projectId}
+                disabled={!!editTeam}
+                onChange={(e) =>
+                  setForm({ ...form, projectId: e.target.value })
+                }
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
+              >
+                <option value="">Select Project</option>
+                {projects.map((p) => (
+                  <option key={p._id} value={p._id} className="bg-[#0B1220]">
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              {errors.projectId && (
+                <p className="text-red-400 text-xs mt-1">{errors.projectId}</p>
+              )}
+            </div>
 
             {/* TEAM NAME */}
-            <div>
-              <input
-                type="text"
-                placeholder="Team Name"
-                value={form.name}
-                onChange={(e) =>
-                  setForm({ ...form, name: toTitleCase(e.target.value) })
-                }
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
-              />
-              {errors.name && (
-                <p className="text-red-400 text-xs mt-1">{errors.name}</p>
-              )}
-            </div>
-
-            {/* DESCRIPTION */}
-            <div>
-              <textarea
-                placeholder="Description"
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: toTitleCase(e.target.value) })
-                }
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
-              />
-              {errors.description && (
-                <p className="text-red-400 text-xs mt-1">
-                  {errors.description}
-                </p>
-              )}
-            </div>
-
-            {/* TEAM KEY */}
-            <div>
-              <input
-                type="text"
-                placeholder="Team Key (e.g. FTM)"
-                value={form.teamKey}
-                onChange={(e) =>
-                  setForm({ ...form, teamKey: e.target.value })
-                }
-                className="w-full uppercase bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
-              />
-              {errors.teamKey && (
-                <p className="text-red-400 text-xs mt-1">{errors.teamKey}</p>
-              )}
-            </div>
-
-            {/* MEMBERS */}
             <input
               type="text"
-              placeholder="Members (comma separated IDs)"
-              value={form.members}
+              placeholder="Team Name"
+              value={form.name}
               onChange={(e) =>
-                setForm({ ...form, members: e.target.value })
+                setForm({ ...form, name: toTitleCase(e.target.value) })
+              }
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
+            />
+            {errors.name && (
+              <p className="text-red-400 text-xs">{errors.name}</p>
+            )}
+
+            {/* DESCRIPTION */}
+            <textarea
+              placeholder="Description"
+              value={form.description}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  description: toTitleCase(e.target.value),
+                })
               }
               className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
             />
 
+            {/* TEAM KEY */}
+            <input
+              type="text"
+              placeholder="Team Key (e.g. FE-TEAM)"
+              value={form.key}
+              onChange={(e) =>
+                setForm({ ...form, key: e.target.value })
+              }
+              className="w-full uppercase bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
+            />
+            {errors.key && (
+              <p className="text-red-400 text-xs">{errors.key}</p>
+            )}
+
+            {/* STATUS */}
+            <select
+              value={form.status}
+              onChange={(e) =>
+                setForm({ ...form, status: e.target.value })
+              }
+              className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm"
+            >
+              <option className="bg-[#0B1220]">Active</option>
+              <option className="bg-[#0B1220]">Archived</option>
+            </select>
+
+            {/* TEAM MEMBERS */}
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">
+                Team Members
+              </label>
+
+              {/* DROPDOWN (task jaisa) */}
+              <select
+                value=""
+                onChange={(e) => {
+                  const userId = e.target.value;
+                  if (!userId) return;
+
+                  // duplicate mat add kar
+                  if (!form.members.includes(userId)) {
+                    setForm((prev) => ({
+                      ...prev,
+                      members: [...prev.members, userId],
+                    }));
+                  }
+                }}
+                className="bg-[#0B1220] border border-white/10 rounded-lg px-3 py-2 text-sm w-full"
+              >
+                <option value="">Add Member</option>
+                {isLoading ? (
+                  <option>Loading members...</option>
+                ) : (
+                  members.map((user) => (
+                    <option
+                      key={user._id}
+                      value={user._id}
+                      disabled={form.members.includes(user._id)}
+                    >
+                      {user.name}
+                    </option>
+                  ))
+                )}
+              </select>
+
+              {/* SELECTED MEMBERS LIST */}
+              {form.members.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {members
+                    .filter((u) => form.members.includes(u._id))
+                    .map((u) => (
+                      <span
+                        key={u._id}
+                        className="flex items-center gap-1 text-xs bg-[#00D1FF]/20 text-[#00D1FF] px-2 py-1 rounded"
+                      >
+                        {u.name}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((prev) => ({
+                              ...prev,
+                              members: prev.members.filter(
+                                (id) => id !== u._id
+                              ),
+                            }))
+                          }
+                          className="hover:text-red-400"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                </div>
+              )}
+            </div>
             {/* BUTTONS */}
             <div className="flex justify-end gap-2 mt-2">
               <button
@@ -170,7 +288,6 @@ const CreateTeamModal = ({ onClose, editTeam }) => {
                 {editTeam ? "Update" : "Create"}
               </button>
             </div>
-
           </div>
         </GlassContainer>
       </div>

@@ -42,12 +42,8 @@ const TeamsList = () => {
         {teams.map((team) => (
           <TeamCard
             key={team._id}
-            team={{
-              ...team,
-              id: team._id,
-              createdBy: team.createdByName,
-            }}
-            onView={(t) => navigate(`/dashboard/teams/${t.id}`)}
+            team={team}
+            onView={(t) => navigate(`/dashboard/teams/${t._id}`)}
             onEdit={(t) => {
               setSelectedTeam(t);
               setOpenModal(true);
@@ -68,6 +64,7 @@ const TeamsList = () => {
             setSelectedTeam(null);
           }}
           editTeam={selectedTeam}
+          projectId={selectedTeam?.project}
         />
       )}
 

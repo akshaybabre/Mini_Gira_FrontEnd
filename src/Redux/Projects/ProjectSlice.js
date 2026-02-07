@@ -19,7 +19,7 @@ export const createProject = createAsyncThunk(
   async (formData, thunkAPI) => {
     try {
       const resp = await axios.post(
-        `${Baseurl}/api/projects/create`,
+        `${Baseurl}/api/projects/createproject`,
         formData,
         { withCredentials: true }
       );
@@ -33,10 +33,30 @@ export const createProject = createAsyncThunk(
 );
 
 /* =======================
-   GET MY PROJECTS
+   GET MY PROJECTS (ADMIN)
 ======================= */
 export const getMyProjects = createAsyncThunk(
   "projects/getMyProjects",
+  async (_, thunkAPI) => {
+    try {
+      const resp = await axios.get(
+        `${Baseurl}/api/projects/getadminprojects/my`,
+        { withCredentials: true }
+      );
+      return resp.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Fetch projects failed"
+      );
+    }
+  }
+);
+
+/* =======================
+   GET ALL PROJECTS
+======================= */
+export const getAllProjects = createAsyncThunk(
+  "projects/getAllProjects",
   async (_, thunkAPI) => {
     try {
       const resp = await axios.get(
@@ -46,7 +66,7 @@ export const getMyProjects = createAsyncThunk(
       return resp.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Fetch projects failed"
+        error.response?.data?.message || "Fetch all projects failed"
       );
     }
   }
@@ -60,7 +80,7 @@ export const updateProject = createAsyncThunk(
   async ({ id, data }, thunkAPI) => {
     try {
       const resp = await axios.put(
-        `${Baseurl}/api/projects/update/${id}`,
+        `${Baseurl}/api/projects/updateproject/${id}`,
         data,
         { withCredentials: true }
       );
@@ -81,7 +101,7 @@ export const deleteProject = createAsyncThunk(
   async (id, thunkAPI) => {
     try {
       await axios.delete(
-        `${Baseurl}/api/projects/delete/${id}`,
+        `${Baseurl}/api/projects/deleteproject/${id}`,
         { withCredentials: true }
       );
       return id;
@@ -114,7 +134,7 @@ const ProjectSlice = createSlice({
       .addCase(createProject.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.projects.push(action.payload.project);
+        state.projects.unshift(action.payload.project);
         state.message = action.payload.message;
       })
       .addCase(createProject.rejected, (state, action) => {
@@ -132,15 +152,23 @@ const ProjectSlice = createSlice({
         state.projects = action.payload.projects;
       })
       .addCase(getMyProjects.rejected, (state, action) => {
+        state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
+      })
+
+      /* ===== GET ALL ===== */
+      .addCase(getAllProjects.fulfilled, (state, action) => {
+        state.projects = action.payload.projects;
       })
 
       /* ===== UPDATE ===== */
       .addCase(updateProject.fulfilled, (state, action) => {
         state.isSuccess = true;
         state.projects = state.projects.map((proj) =>
-          proj._id === action.payload.project._id ? action.payload.project : proj
+          proj._id === action.payload.project._id
+            ? action.payload.project
+            : proj
         );
         state.message = action.payload.message;
       })

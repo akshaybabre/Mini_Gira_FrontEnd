@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ProjectCard from "../../Components/Projects/ProjectCard";
 import CreateProjectModal from "./CreateProjectModal";
 import { useDispatch, useSelector } from "react-redux";
-import { getMyProjects , deleteProject } from "../../Redux/Projects/ProjectSlice";
+import { getMyProjects, deleteProject } from "../../Redux/Projects/ProjectSlice";
 import { useNavigate } from "react-router-dom";
 import DeleteConfirmModal from "../../Components/Projects/DeleteConfirmModal"
 import { toast } from "react-toastify";
@@ -42,12 +42,8 @@ const ProjectsList = () => {
         {projects.map((proj) => (
           <ProjectCard
             key={proj._id}
-            project={{
-              ...proj,
-              id: proj._id,
-              createdBy: proj.createdByName,
-            }}
-            onView={(p) => navigate(`/dashboard/projects/${p.id}`)}
+            project={proj}
+            onView={(p) => navigate(`/dashboard/projects/${p._id}`)}
             onEdit={(p) => {
               setSelectedProject(p);
               setOpenModal(true);
